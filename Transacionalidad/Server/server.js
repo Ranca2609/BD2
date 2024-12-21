@@ -68,6 +68,14 @@ app.post('/estudiantes', async (req, res) => {
                               VALUES (@Nombre, @Carnet, @Creditos)`);
 
         await transaction.commit();
+        await logErrorEnRedis({
+            log_id: new Date().toISOString().replace(/[:.-]/g, ''),
+            tipo: 'insercion',
+            status: 'successs',
+            funcion: 'insertarEstudiante',
+            controlador: 'EstudianteController',
+            descripcion: `Se añadio correctamente al estudiante`
+        });
         res.status(201).json({ status: 'ok', message: 'Estudiante insertado correctamente' });
     } catch (error) {
         if (transaction) await transaction.rollback();

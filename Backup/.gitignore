@@ -1,0 +1,60 @@
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Caches
+*.cache
+*.pyc
+*.pyo
+
+# Environment variables
+.env
+.venv/
+env/
+ENV/
+venv/
+
+# IDEs y herramientas
+.vscode/
+.idea/
+
+# Logs y datos de diagnóstico
+*.log
+*.out
+*.err
+
+# Archivos de configuración específicos de usuario
+*.swp
+*.swo
+
+# Archivos de sistema
+.DS_Store
+Thumbs.db
+
+# Archivos de paquetes
+*.egg
+*.egg-info/
+dist/
+build/
+
+# Archivos creados por pip
+pip-log.txt
+
+# Archivos de base de datos
+*.sqlite3
+*.db
+
+# Archivos relacionados con Docker
+docker-compose.override.yml
+
+# Archivos relacionados con Git
+!.gitignore
+
+# Archivos sensibles
+credentials.json
+
+# Otros archivos temporales
+*.bak
+*.tmp
+*.temp

@@ -3,43 +3,86 @@ const { runQuery } = require('../services/neo4jService');
 
 const router = express.Router();
 
-// Create a node
+// Crear una persona
 router.post('/node', async (req, res) => {
-    const { label, properties } = req.body;
-    const propsString = Object.entries(properties || {})
-        .map(([key, value]) => `${key}: $${key}`)
-        .join(', ');
+  const { name, age } = req.body;
 
-    const query = `CREATE (n:${label} { ${propsString} }) RETURN n`;
-    try {
-        const result = await runQuery(query, properties);
-        res.json({ message: 'Node created successfully', result });
-    } catch (err) {
-        console.error(err);
-        res.status(500).json({ error: 'Failed to create node' });
-    }
+  if (!name || age === undefined) {
+    return res.status(400).json({ error: 'Name and age are required' });
+  }
+
+  const query = `
+    CREATE (p:Person { 
+      name: $name, 
+      age: $age 
+    }) 
+    RETURN p
+  `;
+
+  try {
+    const result = await runQuery(query, { name, age });
+    res.json({ message: 'Person created successfully', result });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: 'Failed to create person' });
+  }
 });
 
-// Create a relationship
-router.post('/relationship', async (req, res) => {
-    const { from, to, type, properties } = req.body;
-    const propsString = Object.entries(properties || {})
-        .map(([key, value]) => `${key}: $${key}`)
-        .join(', ');
+// Buscar persona por nombre
+router.get('/match', async (req, res) => {
+  const { name } = req.query;
 
-    const query = `
-        MATCH (a), (b)
-        WHERE ID(a) = $from AND ID(b) = $to
-        CREATE (a)-[r:${type} { ${propsString} }]->(b)
-        RETURN r
-    `;
-    try {
-        const result = await runQuery(query, { ...properties, from, to });
-        res.json({ message: 'Relationship created successfully', result });
-    } catch (err) {
-        console.error(err);
-        res.status(500).json({ error: 'Failed to create relationship' });
-    }
+  if (!name) {
+    return res.status(400).json({ error: 'Name is required for search' });
+  }
+
+  const query = `
+    MATCH (p:Person)
+    WHERE p.name CONTAINS $name
+    RETURN p
+  `;
+
+  try {
+    const result = await runQuery(query, { name });
+    res.json({ result });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: 'Failed to find person' });
+  }
+});
+
+// Crear una relación entre dos personas
+router.post('/relationship', async (req, res) => {
+  const { fromName, toName, type } = req.body;
+
+  if (!fromName || !toName || !type) {
+    return res.status(400).json({
+      error: 'Source person name, target person name, and relationship type are required',
+    });
+  }
+
+  const query = `
+    MATCH (a:Person), (b:Person)
+    WHERE a.name = $fromName AND b.name = $toName
+    CREATE (a)-[r:${type}]->(b)
+    RETURN r, a, b
+  `;
+
+  try {
+    const result = await runQuery(query, { fromName, toName });
+    res.json({ message: 'Relationship created successfully', result });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: 'Failed to create relationship' });
+  }
+});
+
+// Visualizar gráfica mediante la interfaz de Neo4j Browser
+router.get('/visualize', async (req, res) => {
+  res.json({
+    message: 'Access Neo4j Browser here',
+    url: 'http://localhost:7474/browser/',
+  });
 });
 
 module.exports = router;
